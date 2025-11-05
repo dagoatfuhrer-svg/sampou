@@ -1,0 +1,465 @@
+# AI Agent Instructions for SAMPOU Project
+
+This document provides guidance for AI agents working on the SAMPOU project, based on the project specifications outlined in the Cahier des Charges.
+
+## Project Overview
+
+SAMPOU is a school management application designed to streamline educational administration and enhance communication between stakeholders.
+
+### Core Features
+1. Student Management:
+   - Enrollment and registration
+   - Student profiles and academic history
+   - Document management (transcripts, certificates)
+   - Student progress tracking
+
+2. Academic Management:
+   - Course catalog and curriculum management
+   - Class scheduling and timetables
+   - Grade recording and report generation
+   - Attendance tracking and reporting
+
+3. User Management:
+   - Role-based access control (RBAC)
+   - User profiles for students, teachers, parents, admin
+   - Activity logging and audit trails
+   - Permission management
+
+4. Communication:
+   - Internal messaging system
+   - Announcements and notifications
+   - Parent-teacher communication portal
+   - Document sharing and collaboration
+
+### Technical Architecture
+1. Frontend:
+   - Modern responsive web application
+   - Component-based UI architecture
+   - Real-time updates where applicable
+   - Accessibility compliance
+
+2. Backend:
+   - RESTful API design with OpenAPI/Swagger documentation
+   - JWT-based authentication with role-based access control
+   - Request validation using Joi/Zod schemas
+   - Redis caching for performance optimization
+   - Event-driven architecture for real-time updates
+   - Modular service architecture for scalability
+
+3. Database:
+   - Relational database for structured data
+   - Data encryption at rest
+   - Regular automated backups
+   - Data integrity constraints
+
+## Development Workflow
+
+### Environment Setup
+1. Required Tools:
+   ```bash
+   node -v  # Ensure Node.js >= 18.x
+   npm -v   # Ensure npm >= 9.x
+   ```
+
+2. Initial Setup:
+   ```bash
+   npm install       # Install dependencies
+   npm run setup    # Initialize development environment
+   npm run dev      # Start development server
+   ```
+
+3. Database Setup:
+   ```bash
+   npm run db:migrate   # Run database migrations
+   npm run db:seed     # Seed initial data
+   ```
+
+### Development Guidelines
+1. Security Requirements:
+   - Validate all user input using Joi/Zod schemas
+   - Rate limit API endpoints using Redis
+   - JWT-based session management with refresh tokens
+   - Follow OWASP Top 10 security guidelines
+   - AES-256 encryption for sensitive data
+   - HTTPS/TLS 1.3 for all communications
+   - Content Security Policy (CSP) implementation
+   - Regular security audits and penetration testing
+   - Secure password hashing using bcrypt
+   - Implement MFA for administrative access
+
+2. Performance Standards:
+   - Page load time < 2 seconds
+   - API response time < 500ms
+   - Support for 1000+ concurrent users
+   - Efficient database queries with proper indexing
+
+3. Code Quality:
+   - Write unit tests for all business logic
+   - Maintain 80%+ code coverage
+   - Follow ESLint configuration
+   - Use TypeScript for type safety
+
+## Project Conventions
+
+### Code Organization
+```
+/src
+  /auth                  # Authentication and authorization
+    /strategies/         # Auth strategies (JWT, OAuth)
+    /middleware/         # Auth middleware
+    
+  /models               # Data models
+    /student/           # Student-related models
+    /academic/          # Academic-related models
+    /user/              # User-related models
+    
+  /controllers          # Business logic
+    /api/               # API controllers
+    /web/               # Web controllers
+    
+  /views               # Frontend views
+    /components/        # Reusable UI components
+    /layouts/           # Page layouts
+    /pages/             # Page components
+    
+  /api                 # API endpoints
+    /v1/                # Version 1 endpoints
+    /middleware/        # API middleware
+    
+  /utils               # Shared utilities
+    /validators/        # Input validators
+    /helpers/           # Helper functions
+    /constants/         # Constants and enums
+```
+
+### Naming Conventions
+1. Files:
+   - Components: PascalCase (e.g., `StudentList.tsx`)
+   - Utilities: camelCase (e.g., `dateHelper.ts`)
+   - Tests: `.test.ts` or `.spec.ts` suffix
+
+2. Variables/Functions:
+   - Use descriptive camelCase names
+   - Boolean variables should be prefixed with is/has/should
+   - Async functions should be suffixed with Async
+
+3. Database:
+   - Tables: plural_snake_case
+   - Columns: snake_case
+   - Foreign keys: referenced_table_name_id
+
+### Data Models
+1. User Types:
+   ```typescript
+   interface User {
+     id: string;
+     email: string;
+     role: UserRole;
+     status: UserStatus;
+     firstName: string;
+     lastName: string;
+     lastLogin: Date;
+     createdAt: Date;
+     updatedAt: Date;
+   }
+
+   interface Student extends User {
+     studentId: string;
+     grade: number;
+     class: string;
+     dateOfBirth: Date;
+     guardianId: string;
+     enrollmentStatus: EnrollmentStatus;
+     academicRecords: AcademicRecord[];
+   }
+
+   interface Teacher extends User {
+     teacherId: string;
+     subjects: Subject[];
+     classGroups: ClassGroup[];
+     qualifications: Qualification[];
+   }
+
+   interface Guardian extends User {
+     students: Student[];
+     relationshipType: GuardianRelationType;
+     contactNumber: string;
+     address: Address;
+   }
+   ```
+
+2. Academic Models:
+   ```typescript
+   interface Course {
+     id: string;
+     code: string;
+     name: string;
+     description: string;
+     credits: number;
+     prerequisites: Course[];
+     department: Department;
+   }
+
+   interface ClassGroup {
+     id: string;
+     name: string;
+     courseId: string;
+     teacherId: string;
+     students: Student[];
+     schedule: Schedule[];
+     academicYear: string;
+     semester: Semester;
+   }
+
+   interface Grade {
+     id: string;
+     studentId: string;
+     courseId: string;
+     value: number;
+     type: GradeType;
+     semester: Semester;
+     academicYear: string;
+     submittedBy: string;
+     submittedAt: Date;
+   }
+
+   interface Attendance {
+     id: string;
+     studentId: string;
+     classGroupId: string;
+     date: Date;
+     status: AttendanceStatus;
+     notes?: string;
+     recordedBy: string;
+   }
+   ```
+
+3. Communication Models:
+   ```typescript
+   interface Message {
+     id: string;
+     senderId: string;
+     recipientId: string;
+     subject: string;
+     content: string;
+     status: MessageStatus;
+     attachments: Attachment[];
+     createdAt: Date;
+     readAt?: Date;
+   }
+
+   interface Announcement {
+     id: string;
+     title: string;
+     content: string;
+     author: string;
+     targetAudience: UserRole[];
+     priority: Priority;
+     validFrom: Date;
+     validUntil?: Date;
+     attachments: Attachment[];
+   }
+   ```
+
+## Key Files and Directories
+
+### Core Directories
+```
+/src
+  /auth          # Authentication and authorization
+  /models        # Data models for educational entities
+  /controllers   # Business logic for each module
+  /views         # User interface components
+  /api          # API endpoints for different services
+  /utils        # Shared utilities and helpers
+```
+
+### Configuration
+```
+/config
+  security.config.js    # Security settings
+  database.config.js    # Database configuration
+  roles.config.js      # Role-based access settings
+```
+
+## Testing Requirements
+1. Unit Tests (Jest):
+   ```typescript
+   describe('StudentService', () => {
+     it('should calculate GPA correctly', () => {
+       const grades = [
+         { value: 85, credits: 3 },
+         { value: 90, credits: 4 }
+       ];
+       expect(calculateGPA(grades)).toBe(87.85);
+     });
+   });
+   ```
+
+2. Integration Tests (Supertest):
+   ```typescript
+   describe('Authentication API', () => {
+     it('should authenticate valid credentials', async () => {
+       const response = await request(app)
+         .post('/api/v1/auth/login')
+         .send({
+           email: 'teacher@sampou.edu',
+           password: 'validPassword123'
+         });
+       expect(response.status).toBe(200);
+       expect(response.body).toHaveProperty('token');
+     });
+   });
+   ```
+
+3. End-to-End Tests (Cypress):
+   ```typescript
+   describe('Student Dashboard', () => {
+     it('should display current grades', () => {
+       cy.login('student@sampou.edu', 'password123');
+       cy.visit('/dashboard');
+       cy.get('[data-test="grades-table"]')
+         .should('be.visible')
+         .and('contain', 'Current Semester');
+     });
+   });
+   ```
+
+4. Security Tests:
+   ```typescript
+   describe('Security Measures', () => {
+     it('should prevent SQL injection', async () => {
+       const response = await request(app)
+         .get('/api/v1/students')
+         .query({ name: "'; DROP TABLE students; --" });
+       expect(response.status).toBe(400);
+     });
+   });
+   ```
+
+5. Performance Tests (k6):
+   ```javascript
+   export default function() {
+     const response = http.get('http://sampou.edu/api/v1/courses');
+     check(response, {
+       'status is 200': (r) => r.status === 200,
+       'response time < 500ms': (r) => r.timings.duration < 500
+     });
+   }
+   ```
+
+## API Documentation
+1. Authentication Endpoints:
+   ```typescript
+   /**
+    * @route POST /api/v1/auth/login
+    * @desc Authenticate user and return token
+    */
+   interface LoginRequest {
+     email: string;
+     password: string;
+     mfaCode?: string;
+   }
+
+   interface LoginResponse {
+     token: string;
+     refreshToken: string;
+     user: User;
+   }
+   ```
+
+2. Student Management:
+   ```typescript
+   /**
+    * @route GET /api/v1/students/:id/grades
+    * @desc Get student grades with filtering
+    */
+   interface GradesRequest {
+     semester?: string;
+     courseId?: string;
+     startDate?: Date;
+     endDate?: Date;
+   }
+
+   interface GradesResponse {
+     student: StudentSummary;
+     grades: Grade[];
+     gpa: number;
+   }
+   ```
+
+## Deployment Guidelines
+1. Environment Configuration:
+   ```bash
+   # Development
+   NODE_ENV=development
+   DATABASE_URL=postgres://user:pass@localhost:5432/sampou
+   REDIS_URL=redis://localhost:6379
+   JWT_SECRET=your-secret-key
+   MFA_SECRET=your-mfa-secret
+   SMTP_CONFIG={"host":"smtp.mail.com","port":587}
+   
+   # Production
+   NODE_ENV=production
+   DATABASE_URL=postgres://prod_user:@prod_host:5432/sampou
+   REDIS_CLUSTER=redis://cache.sampou.com:6379
+   JWT_SECRET=prod-secret-key
+   CORS_ORIGINS=https://sampou.edu
+   ```
+
+2. Deployment Process:
+   ```bash
+   # Build and test
+   npm run lint          # Run linting checks
+   npm run test         # Run test suite
+   npm run build        # Build production assets
+   
+   # Database updates
+   npm run db:backup    # Backup current database
+   npm run db:migrate   # Run pending migrations
+   
+   # Deployment
+   npm run deploy:staging   # Deploy to staging
+   npm run test:e2e        # Run E2E tests
+   npm run deploy:prod     # Deploy to production
+   npm run monitor         # Monitor deployment
+   ```
+
+3. Docker Deployment:
+   ```dockerfile
+   # Dockerfile
+   FROM node:18-alpine
+   WORKDIR /app
+   COPY package*.json ./
+   RUN npm ci
+   COPY . .
+   RUN npm run build
+   EXPOSE 3000
+   CMD ["npm", "start"]
+   ```
+
+4. Monitoring Setup:
+   ```typescript
+   // monitoring.config.ts
+   export default {
+     metrics: {
+       responseTime: true,
+       databaseQueries: true,
+       cacheHitRate: true,
+       errorRates: true
+     },
+     alerts: {
+       errorRate: {
+         threshold: 1, // percent
+         interval: '5m'
+       },
+       responseTime: {
+         threshold: 500, // ms
+         interval: '1m'
+       }
+     }
+   };
+   ```
+
+---
+Note: This document will be updated as the project progresses and specific implementation patterns emerge. All AI agents should follow these guidelines to maintain consistency across the codebase.

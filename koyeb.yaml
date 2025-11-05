@@ -1,0 +1,34 @@
+name: sampou
+regions: fra
+env: node
+instance_types:
+  prod: nano
+
+services:
+  - name: api
+    type: web
+    env: node
+    dockerfile: Dockerfile
+    ports:
+      - port: 3000
+        http: true
+    env_vars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          type: postgresql
+          name: sampou-db
+      - key: REDIS_URL
+        fromRedis:
+          name: sampou-cache
+    databases:
+      - type: postgresql
+        name: sampou-db
+        version: "14"
+      - type: redis
+        name: sampou-cache
+        version: "6"
+    healthcheck:
+      path: /health
+      port: 3000
