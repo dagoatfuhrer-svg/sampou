@@ -1,0 +1,34 @@
+# Render service manifest for SAMPOU
+# This file configures a Docker web service and a managed Postgres database.
+# Note: Provide secrets (DATABASE_URL, REDIS_URL, JWT_SECRET, etc.) in the Render dashboard
+# after creating the service or via the Render CLI.
+
+services:
+  - type: web
+    name: sampou
+    env: docker
+    branch: main
+    dockerfilePath: Dockerfile
+    buildCommand: npm run build
+    startCommand: npm start
+    plan: free
+    autoDeploy: true
+    env:
+      - key: PORT
+        value: "3000"
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: sampou-db
+    engine: postgres
+    plan: starter
+    version: "14"
+
+# Notes:
+# - Render will create the Postgres DB. After creation, set DATABASE_URL in the service's
+#   environment variables to the provided connection string Render gives you.
+# - For Redis, Render does not currently provide managed Redis via this manifest. Create a
+#   Redis instance via a 3rd-party provider or Render private service and set REDIS_URL.
+# - Add sensitive values (JWT_SECRET, REFRESH_TOKEN_SECRET, SMTP credentials) in the
+#   Render dashboard under the service's Environment > Environment Secrets.
