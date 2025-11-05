@@ -14,6 +14,9 @@ RUN npm run build
 
 # Expose the port the app runs on
 EXPOSE 3000
+# Copy entrypoint script and make executable
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application using entrypoint (runs migrations/seeds before start)
+CMD ["/bin/sh", "./entrypoint.sh"]
